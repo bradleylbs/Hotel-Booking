@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Executive Room Assignment</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Our Hotel</h1>
+        <div class="tabs">
+            <button class="tab-button" onclick="showTab('booking')">Booking</button>
+            <button class="tab-button" onclick="showTab('available-rooms')">Available Rooms</button>
+        </div>
+        <div id="booking" class="tab-content">
+            <h2>Book an Executive Room</h2>
+            <form id="assignmentForm">
+                <label for="floor">Floor (Please type the floor number (1-10)):</label>
+                <input type="number" id="floor" name="floor" min="1" max="10" required>
+                <label for="name">Guest Name:</label>
+                <input type="text" id="name" name="name" required>
+                <label for="duration">Duration of Stay (in days):</label>
+                <input type="number" id="duration" name="duration" min="1" required>
+                <label for="allergies">Food Allergies (if any):</label>
+                <input type="text" id="allergies" name="allergies">
+                <button type="button" onclick="assignRoom()">Assign Room</button>
+            </form>
+            <div id="result"></div>
+        </div>
+        <div id="available-rooms" class="tab-content" style="display: none;">
+            <h2>Available Executive Rooms</h2>
+            <div id="availableRoomsList"></div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
