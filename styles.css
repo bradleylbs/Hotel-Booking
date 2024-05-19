@@ -70,5 +70,12 @@ button {
 button:hover {
   background-color: #0056b3;
 }
-
+#available-rooms .available-rooms > div {
+  width: 45%;
+  margin: 5px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
 
