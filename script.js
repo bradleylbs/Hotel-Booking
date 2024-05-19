@@ -1,10 +1,10 @@
-// Initialize the occupation chart
 const occupationChart = new Array(20).fill(false);
-const pricePerDay = 550
+const pricePerDay = 550;
 
 document.addEventListener('DOMContentLoaded', () => {
     showTab('booking');
     updateAvailableRoomsList();
+    updateOccupancyTable();
 });
 
 function showTab(tabName) {
@@ -12,12 +12,20 @@ function showTab(tabName) {
         tab.style.display = 'none';
     });
     document.getElementById(tabName).style.display = 'block';
+
+    if (tabName === 'unassign') {
+        updateOccupancyTable();
+    }
+}
+
+function goToHomePage() {
+    showTab('booking');
 }
 
 function assignRoom() {
     const floor = parseInt(document.getElementById('floor').value);
     const name = document.getElementById('name').value;
-    const duration = document.getElementById('duration').value;
+    const duration = parseInt(document.getElementById('duration').value);
     const allergies = document.getElementById('allergies').value || 'None';
     const resultDiv = document.getElementById('result');
 
@@ -27,18 +35,15 @@ function assignRoom() {
         return;
     }
 
-    // Determine room indices for the selected floor (0-based index)
     const room1Index = (floor - 1) * 2;
     const room2Index = room1Index + 1;
 
-    // Find an available room on the requested floor
     let assignedRoomIndex;
     if (!occupationChart[room1Index]) {
         assignedRoomIndex = room1Index;
     } else if (!occupationChart[room2Index]) {
         assignedRoomIndex = room2Index;
     } else {
-        // If both rooms on the floor are occupied, ask the user for an alternative floor
         const alternativeFloor = prompt(`Both rooms on Floor ${floor} are already assigned. Would you like to be placed on another available floor? If yes, type the floor number (1-10). If no, type 0.`);
         const altFloor = parseInt(alternativeFloor);
 
@@ -62,7 +67,6 @@ function assignRoom() {
         }
     }
 
-    // Assign the room
     occupationChart[assignedRoomIndex] = true;
     const assignedRoom = (assignedRoomIndex % 2 === 0) ? Math.floor(assignedRoomIndex / 2) * 10 + 1 : Math.floor(assignedRoomIndex / 2) * 10 + 2;
     const totalCost = duration * pricePerDay;
@@ -71,35 +75,89 @@ function assignRoom() {
         <p>Guest Name: ${name}</p>
         <p>Room Number: ${assignedRoom}</p>
         <p>Floor: ${Math.floor(assignedRoomIndex / 2) + 1}</p>
-        <p>Duration of Stay: ${duration} / ${duration - 1} nights </p>
+        <p>Duration of Stay: ${duration} days / ${duration - 1} nights</p>
         <p>Total Cost: R${totalCost}</p>
         <p>Food Allergies: ${allergies}</p>
     `;
     resultDiv.style.color = 'green';
+    document.getElementById('assignmentForm').reset()
     updateAvailableRoomsList();
+    updateOccupancyTable();
 }
 
 function updateAvailableRoomsList() {
-    const availableRoomsList = document.getElementById('availableRoomsList');
-    availableRoomsList.innerHTML = '';
+    const availableRoomsTableBody = document.getElementById('availableRoomsTableBody');
+    availableRoomsTableBody.innerHTML = '';
 
     for (let floor = 1; floor <= 10; floor++) {
         const room1Index = (floor - 1) * 2;
         const room2Index = room1Index + 1;
 
         if (!occupationChart[room1Index] || !occupationChart[room2Index]) {
-            const floorRooms = document.createElement('div');
-            floorRooms.innerHTML = `<h3>Floor ${floor}</h3>`;
-
             if (!occupationChart[room1Index]) {
-                floorRooms.innerHTML += `<p>Room ${floor * 10 + 1} is available.</p>`;
+                const row = `
+                    <tr>
+                        <td>${floor}</td>
+                        <td>${floor * 10 + 1}</td>
+                        <td>Available</td>
+                    </tr>
+                `;
+                availableRoomsTableBody.innerHTML += row;
             }
 
             if (!occupationChart[room2Index]) {
-                floorRooms.innerHTML += `<p>Room ${floor * 10 + 2} is available.</p>`;
+                const row = `
+                    <tr>
+                        <td>${floor}</td>
+                        <td>${floor * 10 + 2}</td>
+                        <td>Available</td>
+                    </tr>
+                `;
+                availableRoomsTableBody.innerHTML += row;
             }
-
-            availableRoomsList.appendChild(floorRooms);
         }
     }
+}
+
+function updateOccupancyTable() {
+    const occupancyTableBody = document.getElementById('occupancyTableBody');
+    occupancyTableBody.innerHTML = '';
+
+    for (let i = 0; i < occupationChart.length; i++) {
+        if (occupationChart[i]) {
+            const roomNumber = (i % 2 === 0) ? Math.floor(i / 2) * 10 + 1 : Math.floor(i / 2) * 10 + 2;
+            const status = occupationChart[i] ? 'Occupied' : 'Available';
+            const row = `
+                <tr>
+                    <td>${roomNumber}</td>
+                    <td>${status}</td>
+                    <td><button onclick="unassignRoom(${roomNumber})">Check Out</button></td>
+                </tr>
+            `;
+            occupancyTableBody.innerHTML += row;
+        }
+    }
+}
+
+function unassignRoom(roomNumber) {
+    const resultDiv = document.getElementById('unassignResult');
+
+    if (isNaN(roomNumber) || roomNumber < 11 || roomNumber > 110 || roomNumber % 10 === 0 || roomNumber % 10 > 2) {
+        resultDiv.textContent = "Invalid room number. Please type a valid room number.";
+        resultDiv.style.color = 'red';
+        return;
+    }
+
+    const roomIndex = Math.floor((roomNumber - 1) / 10) * 2 + (roomNumber % 10 === 1 ? 0 : 1);
+    if (!occupationChart[roomIndex]) {
+        resultDiv.textContent = `Room ${roomNumber} is already unassigned.`;
+        resultDiv.style.color = 'red';
+        return;
+    }
+
+    occupationChart[roomIndex] = false;
+    resultDiv.textContent = `Room ${roomNumber} has been unassigned successfully.`;
+    resultDiv.style.color = 'green';
+    updateAvailableRoomsList();
+    updateOccupancyTable();
 }
